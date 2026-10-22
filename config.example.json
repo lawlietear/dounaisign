@@ -1,0 +1,7 @@
+{
+  "expectedAccount": "",
+  "proxy": "",
+  "chromePath": "",
+  "headless": false,
+  "timeoutMs": 60000
+}

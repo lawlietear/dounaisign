@@ -1,0 +1,12 @@
+config.json
+node_modules/
+tools/ocr/.venv/
+tools/ocr/cache/
+tools/ocr/__pycache__/
+profiles/
+data/
+logs/
+temp/
+.signin.lock
+*.log
+.DS_Store

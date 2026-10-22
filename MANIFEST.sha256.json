@@ -1,0 +1,219 @@
+{
+  "generatedAt": "2026-10-22T05:33:45.327593+00:00",
+  "version": "1.0.1",
+  "target": "Windows x64",
+  "windowsLiveAcceptance": "not_run",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+      "sizeBytes": 8
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "98a832d36a23c043ff71338160aa4db16df197f7bf9632d727657ecf92bb1176",
+      "sizeBytes": 140
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "dcc55477be4ca92a3fbad5648b284a2be90c53a31d598523a66161cd3058da10",
+      "sizeBytes": 3806
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "8bf876d9efa5cdeda46fa8e535272dbc866ed1c743a7143d8b9ed4a7e86fd9eb",
+      "sizeBytes": 601
+    },
+    {
+      "path": "GITHUB_UPDATES.md",
+      "sha256": "024fce1b7c460c2eb5ae2089b1dffb8b7ecbfd05ff4ef687b7d2e7f153d86a34",
+      "sizeBytes": 4338
+    },
+    {
+      "path": "README.md",
+      "sha256": "2323e12512cf7ae5e930d1b4d99e40907ee6d5bb34734d445910433892fd3785",
+      "sizeBytes": 9780
+    },
+    {
+      "path": "THIRD_PARTY.md",
+      "sha256": "4dac47350a6b514b29384a690660c2220c5fce15b33cd43b83a5a2e377eb2df7",
+      "sizeBytes": 2227
+    },
+    {
+      "path": "VERIFICATION.md",
+      "sha256": "4db7c56c1dbaf1d810c4b60f7fe100a4ffb1a980c6f6d10364a206f9de0d1376",
+      "sizeBytes": 3951
+    },
+    {
+      "path": "WINDOWS_AGENT_PROMPT.txt",
+      "sha256": "aaea8ce535e098c955b8594374b56f660759670e0806151a3dd5eb8cc090ec79",
+      "sizeBytes": 2566
+    },
+    {
+      "path": "app.js",
+      "sha256": "3871c32888112e3a306ff534d57fb0c349f324dfc5ef5c3b7a42bc7528842592",
+      "sizeBytes": 5965
+    },
+    {
+      "path": "config.example.json",
+      "sha256": "8a1468beda771ccca31ec1319bd1e96ec0d3c956e72e75a0a22b28922b6fe5ce",
+      "sizeBytes": 106
+    },
+    {
+      "path": "doctor.ps1",
+      "sha256": "4c13cb222d61b432b781aa0810b42de196b2b4712327e92395c3d08a7650fbd6",
+      "sizeBytes": 94
+    },
+    {
+      "path": "lib/config.js",
+      "sha256": "561502e5e09494b2e78a8e1ddad6cb0f00066ae5b48e8ddc85caacd46421c125",
+      "sizeBytes": 1854
+    },
+    {
+      "path": "lib/dounai-account.js",
+      "sha256": "f112f5c793197a231b410a4d8e9d6c00b2beec27603bbbc091eaa3a2fbe7f92b",
+      "sizeBytes": 1924
+    },
+    {
+      "path": "lib/dounai-captcha-ocr.js",
+      "sha256": "ee90c1182e0e59ed1b744785d342c39276f747d58a11ab0d718f7a7f69d18421",
+      "sizeBytes": 7083
+    },
+    {
+      "path": "lib/lockfile.js",
+      "sha256": "53217bb062de60540c513259e14057fb0c18fb33402db2089e9c7acb643bf6a4",
+      "sizeBytes": 1615
+    },
+    {
+      "path": "lib/logging.js",
+      "sha256": "7cf715b095ed42b02cc65395164e3c365ed1ee82006480bbb86abf2c3f872c65",
+      "sizeBytes": 299
+    },
+    {
+      "path": "lib/result.js",
+      "sha256": "8fd94ee6cb1724556378f58098ecb4094715f2c38b9c612058110b9e09197dbc",
+      "sizeBytes": 292
+    },
+    {
+      "path": "licenses/PaddleOCR-LICENSE.txt",
+      "sha256": "3840c5c0c61c294264d2dd77b8777be6ddd90121ef4e0e64abcd22edea581d6e",
+      "sizeBytes": 11376
+    },
+    {
+      "path": "licenses/RapidOCR-LICENSE.txt",
+      "sha256": "3e0af25fdd06aa9586ae97adb00ea927ebe5a3805ac77d2d3a81ce5f55693333",
+      "sizeBytes": 11422
+    },
+    {
+      "path": "licenses/RapidOCR-MODEL_LICENSES.md",
+      "sha256": "c5fd0e8603d3df743355b546121e6fe0f4ef8ff455c5a85c1681fd3ae520e153",
+      "sizeBytes": 8398
+    },
+    {
+      "path": "login.ps1",
+      "sha256": "b9aaeeb3701dea63141c7a970065fdc378e4dee3fff4ec60a6346b4d8caa01f1",
+      "sizeBytes": 93
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "74e64f547fbc17f1a8fe3238120145c7f95e5d5ef471f561eff940ad8992c583",
+      "sizeBytes": 753
+    },
+    {
+      "path": "package.json",
+      "sha256": "ed40693f198fc9356ac18802e48cce261211ea839f14482a0a30294a001f6c1f",
+      "sizeBytes": 440
+    },
+    {
+      "path": "scripts/check-node.js",
+      "sha256": "0d8ebe5bc05a1368ede4b33467dbf86073d5b4a1e63697c313670549b62a255a",
+      "sizeBytes": 202
+    },
+    {
+      "path": "scripts/check-python.py",
+      "sha256": "dcf20968e0370c893f2dd7655a7a20386f2680e4ae7fb63f8cf8640642627fa2",
+      "sizeBytes": 234
+    },
+    {
+      "path": "scripts/common.ps1",
+      "sha256": "062562f2ec99f8da3807ae7434e4aa8c5480510d0fe2490e1c68b537a5d7438d",
+      "sizeBytes": 718
+    },
+    {
+      "path": "scripts/doctor.js",
+      "sha256": "77abd35e7710a76dab2fd7bcef2d1e270bf624d5adc774aeb028422dff9b8558",
+      "sizeBytes": 1887
+    },
+    {
+      "path": "setup.ps1",
+      "sha256": "45e5c1e2cb0740ff26ba05a8e3c07c47cbcba396fb7ffd444d39af337ef1d719",
+      "sizeBytes": 2674
+    },
+    {
+      "path": "signin.ps1",
+      "sha256": "bf7fdc548ebe89a5bad0529ffc3429935f350001b39a619a942babaaf12b7a82",
+      "sizeBytes": 201
+    },
+    {
+      "path": "sites/dounai-captcha.js",
+      "sha256": "aefccf87932f3a8f262d5c128df6ad244ba46b5bedb4481bf07745de5804afcc",
+      "sizeBytes": 4826
+    },
+    {
+      "path": "sites/dounai.js",
+      "sha256": "0381fe0f82daa8f9ba8cb38ca821014e19cc1c7ffcb8beb07bbeaaf0e01194c1",
+      "sizeBytes": 8528
+    },
+    {
+      "path": "status.ps1",
+      "sha256": "5396ead2d17b208919d26cd3d82b9f6fdf6f4f50cc6b8bfbf6c0a191ff82a343",
+      "sizeBytes": 94
+    },
+    {
+      "path": "tests/fixtures/route-fixtures.js",
+      "sha256": "6e4b5511dcb44e2d42f3fc288f614c191939ec2d13d270e45bfe1bbdb229ebe4",
+      "sizeBytes": 4535
+    },
+    {
+      "path": "tests/windows-package.test.js",
+      "sha256": "fd78bdc39fb18ab397f180a32fb2b743f46d18f0a20d3f2bd85af279d41ee005",
+      "sizeBytes": 22417
+    },
+    {
+      "path": "tools/ocr/assets.json",
+      "sha256": "387f927f10f2dd5ad0676062e5d7ef3854e24e1effb6914a2bf29d8ebfbf2380",
+      "sizeBytes": 770
+    },
+    {
+      "path": "tools/ocr/check-env.py",
+      "sha256": "fabdb0e8a6b5b6e1fe384a64fd1342c710257187d77d14b86f4137fd83908fcf",
+      "sizeBytes": 1089
+    },
+    {
+      "path": "tools/ocr/models/PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile.onnx",
+      "sha256": "5825fc7ebf84ae7a412be049820b4d86d77620f204a041697b0494669b1742c5",
+      "sizeBytes": 16631306
+    },
+    {
+      "path": "tools/ocr/models/PP-OCRv5/rec/ppocrv5_dict.txt",
+      "sha256": "d1979e9f794c464c0d2e0b70a7fe14dd978e9dc644c0e71f14158cdf8342af1b",
+      "sizeBytes": 74012
+    },
+    {
+      "path": "tools/ocr/recognize.py",
+      "sha256": "749dd15fda38d0dcdc323898b6835fafe4f4c6ddbb95f25e4135af2c44e58ce3",
+      "sizeBytes": 2325
+    },
+    {
+      "path": "tools/ocr/requirements.lock.txt",
+      "sha256": "e64265951cc60ab1b37c096609cedeb37db7bceb00fd089e7e9d5fb92b846ef9",
+      "sizeBytes": 11861
+    },
+    {
+      "path": "tools/ocr/source-uv.lock",
+      "sha256": "72fb6b9b7b128791ef48ff5de5006fa0a67b0fa19a58816b5ca7554f6289c46d",
+      "sizeBytes": 45793
+    }
+  ],
+  "repository": "https://github.com/lawlietear/dounaisign"
+}
