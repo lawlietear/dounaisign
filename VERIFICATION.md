@@ -1,5 +1,17 @@
 # 验证记录
 
+## 1.0.3 · 2026-10-23
+
+使用分享目录已有的本地mise Node24.21.0及自身node_modules（playwright-core1.62.1），未使用外部NODE_PATH或安装依赖。该本机mise配置不随Windows包发布，接收方继续使用原Node/PowerShell入口。完整 `npm test` **41项通过、0失败**，包括原30项、新增3项等号补正、7项隔离route浏览器测试及1项共享额度runner测试。
+
+覆盖最后分隔等号前完整操作数位置按2补正、单尾等号/错位等号/零除/非整除/低分拒绝；五次识别失败只关闭四次、五张新图及原文/分数独立留存、第5次成功单次提交、账户/输入/图像变化及填入后异常停止。每次账户读取均核验可配置expectedAccount；外层三分钟补试保持同一个五次额度对象。login与status既有行为通过回归。
+
+受影响JS语法、3个Python AST及PowerShell ASCII/参数转发检查通过；Windows .venv/Scripts/python.exe及UTF-8环境保留。package-lock仅根版本号更新，实际依赖、OCR锁、模型和字典哈希不变，1.0.2升级到1.0.3无需因版本元数据重新setup。28项Mac生产/Windows依赖与本机环境保护指纹匹配。
+
+最初受限执行环境启动测试Chrome发生一次应用注册阶段SIGABRT；之后直接在获准执行环境完成隔离测试，没有新增崩溃报告。所有浏览器测试仅由本地route fixture提供页面、阻断其他请求，使用临时profile并已清理；OCR输出由mock提供，没有真实登录、OCR、签到或调度操作。
+
+以上不代表Windows实机、PowerShell运行时、安装、原生OCR或真实网站验收。这些仍需接收方在Windows本人账户完成。
+
 ## 1.0.2 · 2026-10-23
 
 沿用现有mise/Node24.21.0、外部NODE_PATH及系统Chrome隔离本地route fixture，完整30项回归通过、0失败（原21项、新增诊断fixture与8项retry/runner mock）。首次因执行沙箱阻止Chrome启动，8项纯mock通过、22项未完成；同一受限命令授权重跑后30项全过。没有安装包内依赖或访问真实站点。

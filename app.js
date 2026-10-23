@@ -47,7 +47,7 @@ async function waitForLogin(page, expectedAccount, timeoutMs = 300000) {
   }
 }
 
-async function runBrowserAttempt({ command, baseDir, chromium, interactive, autoCaptcha, attempt }) {
+async function runBrowserAttempt({ command, baseDir, chromium, interactive, autoCaptcha, attempt, captchaAttempts }) {
   const attemptId = `${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`;
   let result;
   let operationStarted = false;
@@ -71,9 +71,9 @@ async function runBrowserAttempt({ command, baseDir, chromium, interactive, auto
             outcome = await waitForLogin(page, config.expectedAccount);
           } else {
             outcome = await runDounaiSignin(page, {
-              expectedAccount: config.expectedAccount, timeoutMs: config.timeoutMs, autoCaptcha, interactive,
-              captureCaptcha: () => captureCaptchaEvidence(page, {
-                baseDir, attemptId, timeoutMs: config.timeoutMs,
+              expectedAccount: config.expectedAccount, timeoutMs: config.timeoutMs, autoCaptcha, interactive, captchaAttempts,
+              captureCaptcha: ({ recognitionAttempt = 1 } = {}) => captureCaptchaEvidence(page, {
+                baseDir, attemptId, timeoutMs: config.timeoutMs, recognitionAttempt,
               }),
             });
           }
@@ -128,7 +128,7 @@ function saveResult(command, baseDir, result) {
 async function main(args = process.argv.slice(2), { baseDir = BASE_DIR, chromium, wait } = {}) {
   const [command, ...flags] = args;
   if (!command || command === '--help') {
-    console.log('node app.js login | signin [--interactive] [--retry-captcha] | status | doctor\nlogin never signs in; signin enables local recognition. Temporary failures share one retry after three minutes; --retry-captcha also permits one retry after an explicit rejection.');
+    console.log('node app.js login | signin [--interactive] [--retry-captcha] | status | doctor\nlogin never signs in; signin enables local recognition. Recognition errors before filling can close and reopen the challenge, up to five recognitions including the first, shared across browser attempts. Temporary failures share one retry after three minutes; --retry-captcha also permits one retry after an explicit rejection.');
     return 0;
   }
   if (!['login', 'signin', 'status', 'doctor'].includes(command) ||
@@ -145,8 +145,9 @@ async function main(args = process.argv.slice(2), { baseDir = BASE_DIR, chromium
   if (command === 'doctor') return require('./scripts/doctor').doctor(baseDir);
   const interactive = command === 'login' || flags.includes('--interactive');
   const retryCaptcha = flags.includes('--retry-captcha');
+  const captchaAttempts = { count: 0 };
   const attempt = ({ attempt, retry = false }) => runBrowserAttempt({
-    command, baseDir, chromium, interactive, autoCaptcha: !retry || retryCaptcha, attempt,
+    command, baseDir, chromium, interactive, autoCaptcha: !retry || retryCaptcha, attempt, captchaAttempts,
   });
   const persist = (result) => saveResult(command, baseDir, result);
   let result;

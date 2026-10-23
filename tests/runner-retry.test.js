@@ -21,6 +21,13 @@ Module._load = function (request, parent, isMain) {
         const { state, settings } = activeScenario;
         const call = ++state.signinCalls;
         state.events.push(`adapter:${page.attempt}:${options.autoCaptcha}:${options.expectedAccount}`);
+        state.captchaAttemptRefs.push(options.captchaAttempts);
+        state.captchaAttemptCounts.push(options.captchaAttempts?.count);
+        const budgetStep = settings.captchaBudgetSteps?.[call - 1];
+        if (budgetStep) {
+          assert.equal(options.captchaAttempts?.count, budgetStep.start);
+          options.captchaAttempts.count = budgetStep.end;
+        }
         if ((settings.throwAdapterOn || []).includes(call)) throw new Error('mock adapter failure');
         return structuredClone(settings.outcomes[call - 1] || {
           ok: false, status: 'runner_error', message: 'no mock outcome',
@@ -63,6 +70,7 @@ function createHarness(t, settings = {}) {
   }, null, 2)}\n`);
   const state = {
     events: [], waits: [], profiles: [], pages: [], launchOptions: [], accountChecks: [],
+    captchaAttemptRefs: [], captchaAttemptCounts: [],
     launches: 0, lockCalls: 0, signinCalls: 0, pageWaits: 0, fakeTime: 1000,
   };
   const scenario = { state, settings };
@@ -235,6 +243,29 @@ test('an explicit second CAPTCHA rejection stops, while default rejection remain
   const finalDefault = JSON.parse(fs.readFileSync(path.join(noRetry.baseDir, 'data/dounai-signin-status.json'), 'utf8'));
   assert.deepEqual([finalDefault.attempt, finalDefault.status], [1, 'captcha_rejected']);
   assert.equal(finalDefault.retry.scheduled, false);
+});
+
+test('signin shares the five-recognition budget across an outer browser retry', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const harness = createHarness(t, {
+    outcomes: [failed('network_error'), failed('verification_required')],
+    captchaBudgetSteps: [{ start: 0, end: 4 }, { start: 4, end: 5 }],
+  });
+
+  assert.equal(await harness.run(['signin', '--retry-captcha']), 1);
+  assert.deepEqual(harness.state.events.filter((event) => event.startsWith('adapter:')), [
+    'adapter:1:true:test-user', 'adapter:2:true:test-user',
+  ]);
+  assert.deepEqual(harness.state.captchaAttemptCounts, [0, 4]);
+  assert.equal(harness.state.captchaAttemptRefs.length, 2);
+  assert.ok(harness.state.captchaAttemptRefs[0]);
+  assert.strictEqual(harness.state.captchaAttemptRefs[0], harness.state.captchaAttemptRefs[1]);
+  assert.equal(harness.state.captchaAttemptRefs[0].count, 5);
+  assert.equal(harness.state.launches, 2);
+  assert.deepEqual(harness.state.waits, [60000, 60000, 60000]);
+  const status = JSON.parse(fs.readFileSync(path.join(harness.baseDir, 'data/dounai-signin-status.json'), 'utf8'));
+  assert.equal(status.status, 'verification_required');
+  assert.equal(status.attempt, 2);
 });
 
 test('login failure and status read do not enter the signin retry flow', async (t) => {

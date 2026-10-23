@@ -63,16 +63,19 @@ async function stateResult(state, page, extraDetails = {}, expectedAccount) {
     Object.keys(details).length ? { details } : {});
 }
 
-async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, interactive = false, autoCaptcha = false, captureCaptcha } = {}) {
-  let clicked = false;
+async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, interactive = false, autoCaptcha = false, captureCaptcha,
+  captchaAttempts = { count: 0 } } = {}) {
+  let pageActionAttempted = false;
   let captchaProcessed = false;
   let captchaFailure;
   let captchaRecognition;
   let captchaEvidence;
+  const captchaHistory = [];
   const diagnosticDetails = () => ({
     ...captchaFailure,
     ...(captchaRecognition ? { captchaRecognition } : {}),
     ...(captchaEvidence ? { captchaEvidence } : {}),
+    ...(captchaHistory.length ? { captchaAttempts: captchaHistory } : {}),
   });
   try {
     const response = await page.goto(PANEL_URL, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
@@ -90,17 +93,27 @@ async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, inter
         state = await readDounaiState(page, expectedAccount);
       }
     }
+    if (autoCaptcha && captchaAttempts.count >= 5 && ['ready_to_sign', 'verification_required'].includes(state)) {
+      return buildResult('dounai', false, 'verification_required', '本次运行已用尽5次验证码识别额度，未再次点击签到。',
+        { details: { captchaAttemptsUsed: captchaAttempts.count } });
+    }
     if (state === 'ready_to_sign') {
-      clicked = true;
+      pageActionAttempted = true;
       await page.locator('#checkin').click({ timeout: timeoutMs });
       state = await observeState(page, timeoutMs, ['ready_to_sign', 'unexpected_response'], expectedAccount);
     } else if (!(autoCaptcha && state === 'verification_required' && await modal.isVisible())) {
       return await stateResult(state, page, {}, expectedAccount);
     }
 
-    if (autoCaptcha && state === 'verification_required' && await modal.isVisible()) {
+    while (autoCaptcha && state === 'verification_required' && await modal.isVisible() && captchaAttempts.count < 5) {
+      const recognitionAttempt = ++captchaAttempts.count;
+      captchaFailure = undefined;
+      captchaRecognition = undefined;
+      captchaEvidence = undefined;
+      let recognitionFailed = false;
+      const history = { attempt: recognitionAttempt };
       if (captureCaptcha) {
-        try { captchaEvidence = await captureCaptcha(); }
+        try { captchaEvidence = await captureCaptcha({ recognitionAttempt }); }
         catch { captchaEvidence = { warning: '处理前验证码图片未保存。' }; }
       }
       try {
@@ -110,15 +123,54 @@ async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, inter
         if (result.rawText !== undefined) captchaRecognition.rawText = result.rawText;
         if (result.engine) captchaRecognition.expression = result.expression;
         captchaProcessed = result.status !== 'filled';
+        history.status = result.status;
       } catch (error) {
         captchaFailure = { captchaError: error.code || error.name };
         if (error.ocrDiagnostic) captchaFailure.captchaRecognition = error.ocrDiagnostic;
         if (error.captchaStage) captchaFailure.captchaStage = error.captchaStage;
         if (error.accountCheck) captchaFailure.accountCheck = error.accountCheck;
         captchaProcessed = error.captchaSubmitAttempted === true;
+        recognitionFailed = error.captchaStage === 'recognition' && !captchaProcessed &&
+          ['uncertain_recognition', 'unsupported_expression', 'ocr_failed'].includes(error.code);
+      }
+      Object.assign(history, captchaFailure,
+        captchaRecognition ? { captchaRecognition } : {}, captchaEvidence ? { captchaEvidence } : {});
+      captchaHistory.push(history);
+      if (recognitionFailed) {
+        state = await readDounaiState(page, expectedAccount);
+        if (state !== 'verification_required' || captchaAttempts.count >= 5) break;
+        const input = modal.locator('#checkin_captcha_code');
+        const close = modal.locator('button.close');
+        if (await input.count() !== 1 || !await input.isVisible() || !await input.isEditable() || await input.inputValue()) {
+          captchaFailure.reopenStopped = 'input_not_empty_or_unavailable';
+        } else if (await close.count() !== 1 || !await close.isVisible() || !await close.isEnabled()) {
+          captchaFailure.reopenStopped = 'close_button_unavailable';
+        }
+        if (captchaFailure.reopenStopped) {
+          history.reopenStopped = captchaFailure.reopenStopped;
+          state = await observeState(page, timeoutMs, ['verification_required', 'ready_to_sign', 'unexpected_response'], expectedAccount);
+          break;
+        }
+        const previousImage = await modal.locator('#checkin-captcha-box svg, #checkin-captcha-box img')
+          .evaluate((element) => element.outerHTML);
+        pageActionAttempted = true;
+        await close.click({ timeout: timeoutMs });
+        await modal.waitFor({ state: 'hidden', timeout: timeoutMs });
+        state = await readDounaiState(page, expectedAccount);
+        if (state !== 'ready_to_sign') break;
+        await page.locator('#checkin').click({ timeout: timeoutMs });
+        state = await observeState(page, timeoutMs, ['ready_to_sign', 'unexpected_response'], expectedAccount);
+        if (state !== 'verification_required' || !await modal.isVisible()) break;
+        await page.waitForFunction((previous) => {
+          const image = document.querySelector('#checkin-captcha-modal #checkin-captcha-box svg, #checkin-captcha-modal #checkin-captcha-box img');
+          return image && image.getClientRects().length && image.outerHTML !== previous;
+        }, previousImage, { timeout: timeoutMs });
+        history.reopened = true;
+        continue;
       }
       // A submitted form or a tool error alone never proves sign-in success.
       state = await observeState(page, timeoutMs, ['verification_required', 'ready_to_sign', 'unexpected_response'], expectedAccount);
+      break;
     }
     if (interactive && state === 'verification_required' && captchaFailure?.captchaError !== 'account_unconfirmed') {
       console.error('签到验证码已打开，请亲自完成；最多等待 5 分钟，不会重复点击签到。');
@@ -135,17 +187,20 @@ async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, inter
         { details: diagnosticDetails() });
     }
     if (captchaFailure && state === 'verification_required') {
-      return buildResult('dounai', false, state, `验证码自动处理未完成（${captchaFailure.captchaError}），请人工处理。`,
+      return buildResult('dounai', false, state,
+        `验证码自动处理未完成（${captchaFailure.captchaError}），本次运行已识别${captchaAttempts.count}次（上限5次）；请人工处理。`,
         { details: diagnosticDetails() });
     }
     if (state === 'verification_required') return await stateResult(state, page, diagnosticDetails(), expectedAccount);
-    return buildResult('dounai', false, 'unconfirmed', '已点击一次签到入口，但没有明确成功标记；未重复点击。');
+    return buildResult('dounai', false, 'unconfirmed', '签到处理后没有明确成功标记；未重复提交。',
+      Object.keys(diagnosticDetails()).length ? { details: diagnosticDetails() } : {});
   } catch (error) {
-    const attempted = clicked || captchaProcessed;
+    const attempted = pageActionAttempted || captchaProcessed;
     return buildResult('dounai', false, attempted ? 'unconfirmed' : 'network_error',
       attempted ? '签到处理后未能确认结果，请核对页面；未重复提交。' : error.message,
-      { details: { ...diagnosticDetails(), executionError: { name: error.name,
-        message: String(error.message || '').split(/\r?\nCall log:/, 1)[0].slice(0, 500) } } });
+      { details: { ...diagnosticDetails(), executionError: {
+        name: error.name, message: String(error.message || '').split(/\r?\nCall log:/, 1)[0].slice(0, 500),
+      } } });
   }
 }
 

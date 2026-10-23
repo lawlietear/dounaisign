@@ -28,7 +28,13 @@ async function processDounaiCaptcha(page, { expectedAccount, submit = false, tim
   }
   if (await input.inputValue()) throw ocr.captchaError('already_filled', '输入框已有内容，保留原输入。');
   const originalImage = await image.evaluate((element) => element.outerHTML);
-  const result = await ocr.recognizeCaptchaImage(await image.screenshot({ type: 'png', timeout: 5000 }));
+  const png = await image.screenshot({ type: 'png', timeout: 5000 });
+  let result;
+  try { result = await ocr.recognizeCaptchaImage(png); }
+  catch (error) {
+    error.captchaStage = 'recognition';
+    throw error;
+  }
   await assertDounaiAccount(page, 'after_ocr', expectedAccount);
   if (!await modal.isVisible() || originalImage !== await image.evaluate((element) => element.outerHTML)) {
     throw ocr.captchaError('captcha_changed', '识别期间验证码已变化，未填入旧答案。');
