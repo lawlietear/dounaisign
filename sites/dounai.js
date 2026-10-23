@@ -63,14 +63,21 @@ async function stateResult(state, page, extraDetails = {}, expectedAccount) {
     Object.keys(details).length ? { details } : {});
 }
 
-async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, interactive = false, autoCaptcha = false } = {}) {
+async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, interactive = false, autoCaptcha = false, captureCaptcha } = {}) {
   let clicked = false;
   let captchaProcessed = false;
   let captchaFailure;
   let captchaRecognition;
+  let captchaEvidence;
+  const diagnosticDetails = () => ({
+    ...captchaFailure,
+    ...(captchaRecognition ? { captchaRecognition } : {}),
+    ...(captchaEvidence ? { captchaEvidence } : {}),
+  });
   try {
     const response = await page.goto(PANEL_URL, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
-    if (response?.status() >= 500) return buildResult('dounai', false, 'network_error', '豆奶网站暂时不可用。');
+    if (response?.status() >= 500) return buildResult('dounai', false, 'network_error', '豆奶网站暂时不可用。',
+      { details: { httpStatus: response.status() } });
     const modal = page.locator('#checkin-captcha-modal');
     let state = await readDounaiState(page, expectedAccount);
     if (interactive && ['auth_required', 'verification_required'].includes(state) &&
@@ -92,6 +99,10 @@ async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, inter
     }
 
     if (autoCaptcha && state === 'verification_required' && await modal.isVisible()) {
+      if (captureCaptcha) {
+        try { captchaEvidence = await captureCaptcha(); }
+        catch { captchaEvidence = { warning: '处理前验证码图片未保存。' }; }
+      }
       try {
         const result = await captcha.recognizeFillAndSubmitDounaiCaptcha(page, { timeoutMs, expectedAccount });
         captchaRecognition = { confidence: result.confidence, recognitionMode: result.recognitionMode };
@@ -114,25 +125,27 @@ async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, inter
       state = await observeState(page, 300000, ['verification_required', 'ready_to_sign', 'unexpected_response'], expectedAccount);
     }
     if (state === 'already_done') return buildResult('dounai', true, 'signed', '豆奶按钮已变为“今日已签到”。',
-      captchaRecognition ? { details: { captchaRecognition } } : {});
-    if (['captcha_rejected', 'auth_required', 'account_mismatch'].includes(state)) return await stateResult(state, page, captchaFailure, expectedAccount);
+      Object.keys(diagnosticDetails()).length ? { details: diagnosticDetails() } : {});
+    if (['captcha_rejected', 'auth_required', 'account_mismatch'].includes(state)) return await stateResult(state, page, diagnosticDetails(), expectedAccount);
     if (captchaProcessed) return buildResult('dounai', false, 'unconfirmed', '验证码处理后没有明确签到成功标记；未重复提交。',
-      captchaFailure ? { details: captchaFailure } : {});
+      Object.keys(diagnosticDetails()).length ? { details: diagnosticDetails() } : {});
     if (captchaFailure?.captchaError === 'account_unconfirmed') {
       return buildResult('dounai', false, 'account_unconfirmed',
         `豆奶账户核验未通过（${captchaFailure.accountCheck.reason}），本轮未继续处理验证码。`,
-        { details: captchaFailure });
+        { details: diagnosticDetails() });
     }
     if (captchaFailure && state === 'verification_required') {
       return buildResult('dounai', false, state, `验证码自动处理未完成（${captchaFailure.captchaError}），请人工处理。`,
-        { details: captchaFailure });
+        { details: diagnosticDetails() });
     }
-    if (state === 'verification_required') return await stateResult(state, page, {}, expectedAccount);
+    if (state === 'verification_required') return await stateResult(state, page, diagnosticDetails(), expectedAccount);
     return buildResult('dounai', false, 'unconfirmed', '已点击一次签到入口，但没有明确成功标记；未重复点击。');
   } catch (error) {
     const attempted = clicked || captchaProcessed;
     return buildResult('dounai', false, attempted ? 'unconfirmed' : 'network_error',
-      attempted ? '签到处理后未能确认结果，请核对页面；未重复提交。' : error.message);
+      attempted ? '签到处理后未能确认结果，请核对页面；未重复提交。' : error.message,
+      { details: { ...diagnosticDetails(), executionError: { name: error.name,
+        message: String(error.message || '').split(/\r?\nCall log:/, 1)[0].slice(0, 500) } } });
   }
 }
 

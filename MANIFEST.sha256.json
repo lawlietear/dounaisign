@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-22T05:33:45.327593+00:00",
-  "version": "1.0.1",
+  "generatedAt": "2026-10-23T00:07:00.429481+00:00",
+  "version": "1.0.2",
   "target": "Windows x64",
   "windowsLiveAcceptance": "not_run",
   "files": [
@@ -16,23 +16,23 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "dcc55477be4ca92a3fbad5648b284a2be90c53a31d598523a66161cd3058da10",
-      "sizeBytes": 3806
+      "sha256": "7d81e8855d7a2738730817eccb023ec910ce5c002a21524e42624feb2a0d68bb",
+      "sizeBytes": 4199
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "8bf876d9efa5cdeda46fa8e535272dbc866ed1c743a7143d8b9ed4a7e86fd9eb",
-      "sizeBytes": 601
+      "sha256": "396a65810ec463d040f74e719ec428a9cd22d25007c1bab834b9861af75f4083",
+      "sizeBytes": 1286
     },
     {
       "path": "GITHUB_UPDATES.md",
-      "sha256": "024fce1b7c460c2eb5ae2089b1dffb8b7ecbfd05ff4ef687b7d2e7f153d86a34",
-      "sizeBytes": 4338
+      "sha256": "89e4eede0ad4cf4b5ded1b89fefe4a6ae6d819bd543fe954322b492718fb2ea1",
+      "sizeBytes": 4509
     },
     {
       "path": "README.md",
-      "sha256": "2323e12512cf7ae5e930d1b4d99e40907ee6d5bb34734d445910433892fd3785",
-      "sizeBytes": 9780
+      "sha256": "41d24e3873391ec08dc592f3c984a04765ee087704f4058c5572e00df2ae40f7",
+      "sizeBytes": 12077
     },
     {
       "path": "THIRD_PARTY.md",
@@ -41,18 +41,18 @@
     },
     {
       "path": "VERIFICATION.md",
-      "sha256": "4db7c56c1dbaf1d810c4b60f7fe100a4ffb1a980c6f6d10364a206f9de0d1376",
-      "sizeBytes": 3951
+      "sha256": "1488ffa2c6e5c40edef5bb5e41ab3745ed86389530fc079ddcb18bb9e8bf8774",
+      "sizeBytes": 5401
     },
     {
       "path": "WINDOWS_AGENT_PROMPT.txt",
-      "sha256": "aaea8ce535e098c955b8594374b56f660759670e0806151a3dd5eb8cc090ec79",
-      "sizeBytes": 2566
+      "sha256": "982641e610aa648c809801f0fbc580224520062ee42f320e4dd3fad04ad89202",
+      "sizeBytes": 2902
     },
     {
       "path": "app.js",
-      "sha256": "3871c32888112e3a306ff534d57fb0c349f324dfc5ef5c3b7a42bc7528842592",
-      "sizeBytes": 5965
+      "sha256": "1feb02251bbb20f9047df97d85f1db9ee8b3a0e2d281f8ab4373b90acdc89ec8",
+      "sizeBytes": 8434
     },
     {
       "path": "config.example.json",
@@ -78,6 +78,16 @@
       "path": "lib/dounai-captcha-ocr.js",
       "sha256": "ee90c1182e0e59ed1b744785d342c39276f747d58a11ab0d718f7a7f69d18421",
       "sizeBytes": 7083
+    },
+    {
+      "path": "lib/dounai-diagnostics.js",
+      "sha256": "a3e9171943c8b8dcec2d45d26bd8eaf349dc92f9acefe7577c3abcd309ce2a87",
+      "sizeBytes": 2593
+    },
+    {
+      "path": "lib/dounai-retry.js",
+      "sha256": "1445043ec933ce64a24e1df9b199c66e1fc3d3269a62a9679cc20775f17582ff",
+      "sizeBytes": 1478
     },
     {
       "path": "lib/lockfile.js",
@@ -116,12 +126,12 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "74e64f547fbc17f1a8fe3238120145c7f95e5d5ef471f561eff940ad8992c583",
+      "sha256": "d1375f4163b36a5ab64d9a81e1dcf17bc136a5bc9d18b87c2f78f8853fb8ad15",
       "sizeBytes": 753
     },
     {
       "path": "package.json",
-      "sha256": "ed40693f198fc9356ac18802e48cce261211ea839f14482a0a30294a001f6c1f",
+      "sha256": "265fe11851c91b110fbb140db01ce03c003c14e197f6547d4b915453d58ad071",
       "sizeBytes": 440
     },
     {
@@ -151,8 +161,8 @@
     },
     {
       "path": "signin.ps1",
-      "sha256": "bf7fdc548ebe89a5bad0529ffc3429935f350001b39a619a942babaaf12b7a82",
-      "sizeBytes": 201
+      "sha256": "70fa4c59479020cd923508de29e660d7fb61dff9cbfc1475b0b49150977ad795",
+      "sizeBytes": 280
     },
     {
       "path": "sites/dounai-captcha.js",
@@ -161,8 +171,8 @@
     },
     {
       "path": "sites/dounai.js",
-      "sha256": "0381fe0f82daa8f9ba8cb38ca821014e19cc1c7ffcb8beb07bbeaaf0e01194c1",
-      "sizeBytes": 8528
+      "sha256": "06a57c1c7b957dd734df663ec344a7d95b81a434308202838e96da41f666edd0",
+      "sizeBytes": 9237
     },
     {
       "path": "status.ps1",
@@ -175,9 +185,19 @@
       "sizeBytes": 4535
     },
     {
+      "path": "tests/retry.test.js",
+      "sha256": "6692d327db52e2374db0922ce8ac313d141a3cd395fe464f1c00f80d4be6b6b0",
+      "sizeBytes": 3837
+    },
+    {
+      "path": "tests/runner-retry.test.js",
+      "sha256": "dcb974381480e432f7811945f897ed21b1f2c2f97660e733a4f21528202b9714",
+      "sizeBytes": 12559
+    },
+    {
       "path": "tests/windows-package.test.js",
-      "sha256": "fd78bdc39fb18ab397f180a32fb2b743f46d18f0a20d3f2bd85af279d41ee005",
-      "sizeBytes": 22417
+      "sha256": "c5288f946a5d35252ebb142c4f4ce7541beaf9773b6d167f6afc50ac05557203",
+      "sizeBytes": 24822
     },
     {
       "path": "tools/ocr/assets.json",
@@ -214,6 +234,5 @@
       "sha256": "72fb6b9b7b128791ef48ff5de5006fa0a67b0fa19a58816b5ca7554f6289c46d",
       "sizeBytes": 45793
     }
-  ],
-  "repository": "https://github.com/lawlietear/dounaisign"
+  ]
 }

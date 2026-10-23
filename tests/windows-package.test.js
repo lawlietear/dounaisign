@@ -16,6 +16,7 @@ const { PANEL_URL } = require('../lib/dounai-account');
 const captchaOcr = require('../lib/dounai-captcha-ocr');
 const { runDounaiSignin } = require('../sites/dounai');
 const { verifyAssets } = require('../scripts/doctor');
+const { captureCaptchaEvidence, captureFailureEvidence } = require('../lib/dounai-diagnostics');
 const { TEST_ACCOUNT, panelHtml } = require('./fixtures/route-fixtures');
 
 const CHROME_EXECUTABLE = process.env.DOUNAI_TEST_CHROME_PATH ||
@@ -114,6 +115,40 @@ function writeStatus(baseDir, result) {
   fs.mkdirSync(directory, { recursive: true });
   fs.writeFileSync(path.join(directory, 'dounai-signin-status.json'), `${JSON.stringify(result, null, 2)}\n`);
 }
+
+test('diagnostics mask changing inputs, sanitize the URL, preserve the page error, and capture pre-processing evidence', async (t) => {
+  const baseDir = temporaryDirectory(t, 'dounai-windows-diagnostics-');
+  await withPanelFixture({}, async (page) => {
+    await page.goto(PANEL_URL, { waitUntil: 'domcontentloaded' });
+    const captcha = await captureCaptchaEvidence(page, {
+      baseDir, attemptId: 'local-fixture', timeoutMs: 1500,
+    });
+    assert.equal(captcha.stage, 'before_processing');
+    assert.ok(fs.statSync(path.join(baseDir, captcha.image)).size > 0);
+    assert.equal(fs.readFileSync(path.join(baseDir, captcha.image)).subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+
+    await page.locator('#checkin-captcha-err').evaluate((element) => {
+      element.textContent = '本地fixture验证码拒绝原文';
+      element.style.display = 'block';
+    });
+    await page.evaluate(() => history.replaceState(null, '', `${location.pathname}?secret=query-value#secret-fragment`));
+    const input = page.locator('#checkin_captcha_code');
+    await input.fill('first private fixture value');
+    const first = await captureFailureEvidence(page, { baseDir, attemptId: 'failure-one' });
+    const firstBytes = fs.readFileSync(path.join(baseDir, first.screenshot));
+    await input.fill('different private fixture value');
+    const second = await captureFailureEvidence(page, { baseDir, attemptId: 'failure-two' });
+    const secondBytes = fs.readFileSync(path.join(baseDir, second.screenshot));
+
+    assert.deepEqual(firstBytes, secondBytes, 'input values are covered by the screenshot mask');
+    assert.equal(new URL(first.page.url).search, '');
+    assert.equal(new URL(first.page.url).hash, '');
+    assert.doesNotMatch(first.page.url, /query-value|secret-fragment/);
+    assert.equal(first.page.captchaErrorText, '本地fixture验证码拒绝原文');
+    assert.equal(second.page.captchaErrorText, first.page.captchaErrorText);
+    assert.equal(first.screenshot, 'data/dounai-diagnostics/failure-one/failure.png');
+  });
+});
 
 test('configuration requires an expected username and trims it', (t) => {
   const baseDir = temporaryDirectory(t);
@@ -551,9 +586,12 @@ test('PowerShell entrypoints are BOM-free ASCII and preserve native failure code
   }
   const setup = fs.readFileSync(path.join(packageRoot, 'setup.ps1'), 'utf8');
   const common = fs.readFileSync(path.join(packageRoot, 'scripts/common.ps1'), 'utf8');
+  const signin = fs.readFileSync(path.join(packageRoot, 'signin.ps1'), 'utf8');
   assert.match(setup, /\[Parameter\(Mandatory = \$true\)\]\[string\]\$Account/);
   assert.match(setup, /npm\.cmd ci --no-audit --no-fund/);
   assert.match(setup, /--require-hashes --only-binary=:all:/);
+  assert.match(signin, /param\(\[switch\]\$Interactive,\s*\[switch\]\$RetryCaptcha\)/);
+  assert.match(signin, /if \(\$RetryCaptcha\) \{ \$signinArgs \+= '--retry-captcha' \}/);
   assert.match(common, /& node\.exe \(Join-Path \$DounaiPackageRoot 'app\.js'\) @DounaiArgs/);
   assert.match(common, /exit \$LASTEXITCODE/);
 });

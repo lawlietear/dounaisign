@@ -1,8 +1,8 @@
-# 豆奶 Windows 独立签到代码包 1.0.1
+# 豆奶 Windows 独立签到代码包 1.0.2
 
 公开仓库：[lawlietear/dounaisign](https://github.com/lawlietear/dounaisign)。首次可克隆代码，后续按 [更新说明](GITHUB_UPDATES.md) 拉取变化。
 
-面向 **Windows 10/11 x64**，由 Agent 或使用者通过 PowerShell 执行。无需桌面界面或 Codex 专用工具，不连接原项目、不创建定时任务。包含豆奶签到、本地 RapidOCR 算式验证码识别、填写、最多一次提交及网页结果核验。
+面向 **Windows 10/11 x64**，由 Agent 或使用者通过 PowerShell 执行。无需桌面界面或 Codex 专用工具，不连接原项目、不创建定时任务。包含豆奶签到、本地 RapidOCR 算式验证码识别、填写、每轮最多一次提交及网页结果核验；可选择明确拒绝后等待3分钟补试一次。
 
 当前代码从已成功签到的 Mac 版本独立整理，改为每位使用者自己的账户配置和专用 Chrome 资料。Windows 安装与真实签到尚需接收方验收，具体已执行验证见 [VERIFICATION.md](VERIFICATION.md)。分享前的包内文件指纹见 `MANIFEST.sha256.json`。
 
@@ -65,20 +65,31 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\status.ps1
 
 ```powershell
 .\doctor.ps1               # 依赖、模型哈希、CPU模型会话检查；不访问网站
-.\signin.ps1               # 单次签到，自动处理支持的算式验证码
+.\signin.ps1               # 签到；普通临时故障/缺少登录证据可补试一次
+.\signin.ps1 -RetryCaptcha # 同时允许验证码明确拒绝后3分钟补试一次
 .\signin.ps1 -Interactive  # 需要本人接管登录/验证时前台等待
 .\status.ps1               # 只读检查当天结果，不打开浏览器或补签
 ```
 
-Agent也可直接调用 `node app.js doctor|login|signin|status`；交互签到为 `node app.js signin --interactive`。各命令与当前工作目录无关，数据始终写到本包目录。执行后必须读取退出码和JSON，不能仅凭命令已启动报告完成。
+Agent也可直接调用 `node app.js doctor|login|signin|status`；交互签到为 `node app.js signin --interactive`；验证码拒绝补试为 `node app.js signin --retry-captcha`，两开关可同时使用。各命令与当前工作目录无关，数据始终写到本包目录。执行后必须读取退出码和JSON，不能仅凭命令已启动报告完成。
 
 - 签到前已有正确账户及可见、禁用的“今日已签到”按钮：`already_done`，不点击。
-- 未签到：最多点击一次签到入口。出现支持的豆奶算式验证码时，本地识别、校验、填写并最多提交一次。只有页面按钮明确变为“今日已签到”才返回 `signed`。
-- 识别文字/分数/语法不确定、验证码被拒、账户冲突、图片变化或用户已输入时停止；不循环重试、不覆盖本人输入。
+- 未签到：每轮最多点击一次签到入口。出现支持的豆奶算式验证码时，本地识别、校验、填写并最多提交一次。只有页面按钮明确变为“今日已签到”才返回 `signed`。
+- 识别文字/分数/语法不确定、账户冲突、图片变化或用户已输入时停止；不覆盖本人输入。验证码明确被拒只有启用 -RetryCaptcha 时才允许一次延迟新页面尝试，结果未确认不重提。
 - HTTP 200、OCR得到答案、填入或点击提交均不代表成功。缺少明确成功标记记为 `unconfirmed`。
 - `status` 只有 `site=dounai`、`ok=true`、`status=signed/already_done`，且timestamp在 **Asia/Shanghai今天** 才返回 `completionOk=true`。
 
 正常完成退出码0，失败/需要本人处理/旧状态或缺失状态为1，命令参数错误为2。`login`的0只表示登录已确认，不代表当天签到。
+
+## 合并重试与失败诊断
+
+`signin` 默认对 `network_error`、`runner_error`、`busy`、`auth_required` 等故障先保存首次实际结果，关闭本包Chrome、释放锁，分三次各60秒等待后，用同一包内profile新建浏览器和页面再尝试一次。等待期间不会持锁。缺少登录证据只会复查，不新增自动密码输入或提交；需要本人登录时使用login或交互模式。
+
+加 `-RetryCaptcha`（Node为 `--retry-captcha`）后，网站明确返回 `captcha_rejected` 也加入同一个补试预算，第二轮重新读取图片，不复用旧答案。所有可重试故障合计最多两轮，不按状态分别叠加：例如第一轮网络失败，第二轮验证码拒绝，就立即停止，不会第三轮。成功、`unconfirmed`、`verification_required`、账户不符和账户未确认均不自动补试。默认未开此选项时，普通故障的补试轮也不自动处理新验证码，需本人接管。独立 `login` 命令不执行签到或该补试循环。
+
+每次登录/签到尝试单独保存 `data/dounai-diagnostics/<UTC时间-随机标识>/result.json`。可取得页面时，失败在关闭前截图为failure.png，遮盖所有输入框/文本框/可编辑区；记录剔除query/fragment的页面URL、标题、登录框/验证码状态和页面错误原文。浏览器启动失败没有页面可截图，如实保留错误。原图在处理前保存为captcha-before-processing.png；网站拒绝或未确认时，已有rawText、expression、confidence也会保留。截图失败只附警告，不覆盖实际结果。
+
+最新结果仍写入原状态文件，历史日志逐次追加；最终结果用attempt、retry.previousRecord关联首次证据，后续成功不会删除失败目录。截图、原图和日志都是私人运行数据，已被Git排除，不能重新打包分享。
 
 ## 验证码识别范围
 
@@ -102,6 +113,7 @@ Cloudflare、图片选择、拼图、二次认证不走此算式OCR分支；需�
 | `data/dounai-signin-status.json` | 本轮真实结果，失败也覆盖旧结果 |
 | `data/login-status.json` | 独立登录结果，不算签到 |
 | `data/dounai-signin-YYYY-MM-DD.png` | 明确成功后的按钮截图 |
+| `data/dounai-diagnostics/` | 每轮独立结果、失败截图、处理前原图及诊断 |
 | `logs/` | 本机运行历史 |
 | `temp/` | 包内安装缓存与本地测试临时文件 |
 

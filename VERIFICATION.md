@@ -1,5 +1,15 @@
 # 验证记录
 
+## 1.0.2 · 2026-10-23
+
+沿用现有mise/Node24.21.0、外部NODE_PATH及系统Chrome隔离本地route fixture，完整30项回归通过、0失败（原21项、新增诊断fixture与8项retry/runner mock）。首次因执行沙箱阻止Chrome启动，8项纯mock通过、22项未完成；同一受限命令授权重跑后30项全过。没有安装包内依赖或访问真实站点。
+
+覆盖不同失败状态共用两轮、三次模拟60000ms、network_error后captcha_rejected不得第三轮、默认拒绝不补和显式RetryCaptcha开启、同包profile重新建页、关闭释放锁先于等待、前后证据独立、可配置账户、login不签到且不进入signin补试、status只读。本地浏览器验证了输入变化前后截图字节相同、URL去query/fragment、页面错误原文及处理前图保存；截图为synthetic，不是实际签到证据。
+
+17个JS语法与3个Python AST检查通过；Windows专用Python路径/UTF-8、账户/配置/验证码保护模块均保留，PowerShell新RetryCaptcha开关通过ASCII及静态参数转发检查。package-lock除顶层和根包version外逐项相同，OCR依赖、模型和字典哈希不变。仅升级1.0.1到1.0.2不需重装Node或OCR依赖。临时profile及输出已清理，初始分享包不含运行后资料。
+
+这些是Mac上的本地mock/fixture及静态检查，Windows本机、PowerShell实际执行、安装/原生OCR和真实签到仍待接收方验收。
+
 ## 1.0.1 · 2026-10-22
 
 沿用下方相同mise/Node 24.21.0、外部NODE_PATH及Chrome本地route fixture命令，21项通过、0失败。新增等号左侧纯数字/中文混排转换、前导零保留、非法/不完整输入及低分拒绝；模拟`玖5=`经实际文本解析器得到95，填写并仅提交一次，出现明确已签到标记才成功。OCR文字来自模拟桩，未实测本次规则对应的真实验证码图片。
