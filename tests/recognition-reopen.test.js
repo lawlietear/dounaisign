@@ -249,6 +249,70 @@ function historyOf(result) {
   return result.details?.captchaAttempts ?? [];
 }
 
+test('missing equals delimiter is intercepted before fill or submit and the five-attempt budget blocks further action', async (t) => {
+  const rawText = '4乘七三';
+  const confidence = 0.85058;
+  const mock = t.mock.method(captchaOcr, 'recognizeCaptchaImage', async () =>
+    captchaOcr.resolveRapidRecognition({ rows: [{ text: rawText, confidence }] }));
+  const captchaAttempts = { count: 0 };
+
+  await withFixture({}, async (page, expectedAccount) => {
+    const result = await runDounaiSignin(page, {
+      expectedAccount,
+      timeoutMs: 800,
+      autoCaptcha: true,
+      captchaAttempts,
+    });
+    const effects = await pageEffects(page);
+
+    assert.equal(result.status, 'verification_required');
+    assert.equal(mock.mock.callCount(), 5);
+    assert.equal(captchaAttempts.count, 5);
+    assert.equal(effects.checkinClicks, 5);
+    assert.equal(effects.closeClicks, 4);
+    assert.equal(effects.inputEvents, 0);
+    assert.equal(effects.inputValue, '');
+    assert.equal(effects.captchaButtonClicks, 0);
+    assert.equal(effects.captchaSubmits, 0);
+    assert.deepEqual(historyOf(result).map((attempt) => attempt.captchaRecognition), Array(5).fill({
+      engine: 'rapidocr', rawText, confidence, reason: 'missing_equals_delimiter',
+    }));
+
+    const screenshotDir = path.join(temporaryRoot, 'terminator-sync-20261026');
+    const screenshotPath = path.join(screenshotDir, 'synthetic-terminator-interception.png');
+    fs.mkdirSync(screenshotDir, { recursive: true });
+    await page.evaluate(() => {
+      const marker = document.createElement('div');
+      marker.textContent = 'SYNTHETIC TEST — missing equals delimiter intercepted before fill or submit';
+      Object.assign(marker.style, {
+        position: 'fixed', bottom: '0', left: '0', zIndex: '999999',
+        padding: '8px', background: '#fff4cc', color: '#222', font: '14px sans-serif',
+      });
+      document.body.append(marker);
+    });
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    assert.ok(fs.statSync(screenshotPath).size > 0);
+  });
+
+  await withFixture({}, async (page, expectedAccount) => {
+    const result = await runDounaiSignin(page, {
+      expectedAccount,
+      timeoutMs: 800,
+      autoCaptcha: true,
+      captchaAttempts,
+    });
+    const effects = await pageEffects(page);
+
+    assert.equal(result.status, 'verification_required');
+    assert.equal(result.details.captchaAttemptsUsed, 5);
+    assert.equal(mock.mock.callCount(), 5);
+    assert.equal(effects.checkinClicks, 0);
+    assert.equal(effects.inputEvents, 0);
+    assert.equal(effects.captchaButtonClicks, 0);
+    assert.equal(effects.captchaSubmits, 0);
+  });
+});
+
 test('five failed recognition attempts use fresh images, close four times, and preserve per-attempt evidence', async (t) => {
   await withFixture({}, async (page, expectedAccount) => {
     const behaviors = Array.from({ length: 5 }, (_, index) => ({

@@ -1,6 +1,6 @@
 # GitHub发布与增量更新
 
-本包版本1.0.3。推荐将**本包目录**作为单独仓库根目录；首次通过Git克隆，之后由Agent执行拉取更新。Git仅传输需要的仓库对象并更新有变化的文件；未变化的模型无需作为完整ZIP反复发送。本包没有自动更新服务，也不会在签到前自行拉取或执行远程代码。
+本包版本1.0.4。推荐将**本包目录**作为单独仓库根目录；首次通过Git克隆，之后由Agent执行拉取更新。Git仅传输需要的仓库对象并更新有变化的文件；未变化的模型无需作为完整ZIP反复发送。本包没有自动更新服务，也不会在签到前自行拉取或执行远程代码。
 
 正式公开仓库：https://github.com/lawlietear/dounaisign 。朋友可直接使用下方克隆命令。
 
@@ -53,7 +53,7 @@ git log -1 --oneline
 
 Agent须逐条检查退出码；pull失败时停止，不继续运行后续命令。工作区有本地代码修改或分支分叉时先报告差异，保留修改，不强制覆盖。`--ff-only`在不能快进时停止，不自动合并。私有配置和登录资料从未纳入跟踪时，普通代码更新会保留它们。不要使用git clean -fdx或删除profiles来更新。
 
-实际依赖版本/哈希没变化时不需重复setup。1.0.2升级到1.0.3的package-lock.json仅根version更新，依赖及模型未变化，可保留原node_modules和OCR .venv直接doctor。后续若package-lock的依赖节点或OCR依赖清单实际变化，在pull成功后运行setup.ps1，再doctor；setup保留已有config.json。模型变化会随Git更新，由doctor核对哈希。更新本身不登录、不签到；需要真实签到时另外执行signin.ps1，并按状态与网页回执验收。
+实际依赖版本/哈希没变化时不需重复setup。1.0.3升级到1.0.4的package-lock.json仅版本元数据更新，依赖及模型未变化，可保留原node_modules和OCR .venv直接doctor。后续若package-lock的依赖节点或OCR依赖清单实际变化，在pull成功后运行setup.ps1，再doctor；setup保留已有config.json。模型变化会随Git更新，由doctor核对哈希。更新本身不登录、不签到；需要真实签到时另外执行signin.ps1，并按状态与网页回执验收。
 
 可发给朋友的更新指令：
 

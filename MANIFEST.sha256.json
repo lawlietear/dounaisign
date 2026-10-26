@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-23T07:08:06.197772+00:00",
-  "version": "1.0.3",
+  "generatedAt": "2026-10-26T01:58:12.753Z",
+  "version": "1.0.4",
   "target": "Windows x64",
   "windowsLiveAcceptance": "not_run",
   "files": [
@@ -16,23 +16,23 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "3650d62bd0b5db963d0b2adcba87274c3250a347c95d0d27f0ee36887477d0c0",
-      "sizeBytes": 4482
+      "sha256": "4cffb6402350a2fc8c20c8f699657acaeb0622c4943094e2b2b379dab1edc41e",
+      "sizeBytes": 4609
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "0709b5da131c8b7740873439138e5df49a91849055fbe042a7022b63c18a63fd",
-      "sizeBytes": 2109
+      "sha256": "00a8c3e809257b1011c4904f848cbd2566179be9a01837ab78767d0800fd1d11",
+      "sizeBytes": 2526
     },
     {
       "path": "GITHUB_UPDATES.md",
-      "sha256": "39a273decdaffc82ad95b7c79ea6e0536e0ca4c2f8a5123e0fdd9b5dc70451a6",
-      "sizeBytes": 4509
+      "sha256": "67c0e4d77b345da12ff5cdc7cd489659d98e2c4c753939121d4d3f5eee82eb41",
+      "sizeBytes": 4514
     },
     {
       "path": "README.md",
-      "sha256": "5390e740c7f2427dc995edf34317c62502c1f88d943bc11a026bcc50e04fa68f",
-      "sizeBytes": 13781
+      "sha256": "be3e93fe44e1b75c1e855b84ca8d5132103302d531121b1b08fa9b9d38896efa",
+      "sizeBytes": 14255
     },
     {
       "path": "THIRD_PARTY.md",
@@ -41,8 +41,8 @@
     },
     {
       "path": "VERIFICATION.md",
-      "sha256": "36c9be8c0b27e25a51d5211f1c591c8092f19de35f63056aff9d70737c1de965",
-      "sizeBytes": 7101
+      "sha256": "02b5212a90e8094ae55782c9eec4be22ce43cd0168cb60a20822471a98f6941d",
+      "sizeBytes": 8329
     },
     {
       "path": "WINDOWS_AGENT_PROMPT.txt",
@@ -76,8 +76,8 @@
     },
     {
       "path": "lib/dounai-captcha-ocr.js",
-      "sha256": "e18ae3c50ffe23bd2d9f607e121ce43d31bd3fe739ceb8ad53f1890d986a7435",
-      "sizeBytes": 7796
+      "sha256": "f55a469d151b8dac5337efe691658ecb212cd914e0583bf2bddf41f15e7dfab8",
+      "sizeBytes": 8029
     },
     {
       "path": "lib/dounai-diagnostics.js",
@@ -126,12 +126,12 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "1c60e5c07c7b88cc56a1a7421d2a079d3225440f6fac6b7662b1e4cd9cac361c",
+      "sha256": "fced096dd923aac608201d89a161a3b8b65d1e4504efcc8a9216c0afba2056c1",
       "sizeBytes": 753
     },
     {
       "path": "package.json",
-      "sha256": "5b32116568f7b674d6f046f654002f292f0ccf7624f6857077efa45362584ca8",
+      "sha256": "fce612e5975a1e2960bdbe94d6ada47671553261992b1d41b23b88b7c8045fd1",
       "sizeBytes": 440
     },
     {
@@ -181,8 +181,8 @@
     },
     {
       "path": "tests/equals-operand.test.js",
-      "sha256": "3dfb68ccda78cd0d5d214ab540edd6acf9b636b61f79a6bc49196baa50962255",
-      "sizeBytes": 2811
+      "sha256": "61722c1e4781e8dcfef81c22d5ab1242451ac9ffc735c9e514f50d8aebe61fcb",
+      "sizeBytes": 4332
     },
     {
       "path": "tests/fixtures/route-fixtures.js",
@@ -191,8 +191,8 @@
     },
     {
       "path": "tests/recognition-reopen.test.js",
-      "sha256": "b9f53e5c5176fe7cecf7ca769a4c3a66f60afc02017cd3bbef3c2af26561df65",
-      "sizeBytes": 23996
+      "sha256": "302e3df6086e0f1ea35b4ae8b7a545c3cf244a6d51b07b2baba2df0ba22cc602",
+      "sizeBytes": 26657
     },
     {
       "path": "tests/retry.test.js",

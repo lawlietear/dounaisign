@@ -7,8 +7,8 @@ const { parseArithmeticCaptcha, resolveRapidRecognition } = require('../lib/doun
 
 test('repairs an equals glyph only when it is a whole operand before a separate final delimiter', () => {
   const examples = [
-    ['陆除二', { expression: '6/2', answer: '3' }],
-    ['3÷三', { expression: '3/3', answer: '1' }],
+    ['陆除二=', { expression: '6/2', answer: '3' }],
+    ['3÷三=', { expression: '3/3', answer: '1' }],
     ['陆除==', { expression: '6/2', answer: '3' }],
     ['六除以=等于?', { expression: '6/2', answer: '3' }],
     ['６÷＝＝忽略', { expression: '6/2', answer: '3' }],
@@ -46,6 +46,46 @@ test('keeps strict parsing and rejects misplaced, incomplete, or invalid equals 
       assert.equal(error.ocrDiagnostic.reason, 'unsupported_expression');
       return true;
     }, rawText);
+  }
+});
+
+test('RapidOCR requires an equals delimiter and preserves missing-delimiter diagnostics', () => {
+  const missingDelimiters = [
+    ['4乘七三', 0.85058],
+    ['4乘七三', 0.99],
+    ['4*73', 0.91],
+    ['4乘七', 0.92],
+  ];
+
+  for (const [rawText, confidence] of missingDelimiters) {
+    assert.throws(() => resolveRapidRecognition({ rows: [{ text: rawText, confidence }] }), (error) => {
+      assert.equal(error.code, 'uncertain_recognition');
+      assert.deepEqual(error.ocrDiagnostic, {
+        engine: 'rapidocr', rawText, confidence, reason: 'missing_equals_delimiter',
+      });
+      assert.equal(Object.hasOwn(error, 'answer'), false);
+      return true;
+    }, rawText);
+  }
+
+  // The lower-level parser remains a syntax helper; only RapidOCR resolution requires evidence of a delimiter.
+  assert.deepEqual(parseArithmeticCaptcha('4乘七三'), { expression: '4*73', answer: '292' });
+});
+
+test('keeps valid final digits and explicit Chinese or fullwidth delimiters', () => {
+  const examples = [
+    ['4乘七=三', '4*7', '28'],
+    ['4乘七三=', '4*73', '292'],
+    ['4*73=', '4*73', '292'],
+    ['4乘七等于三', '4*7', '28'],
+    ['４×７３＝', '4*73', '292'],
+  ];
+
+  for (const [rawText, expression, answer] of examples) {
+    const result = resolveRapidRecognition({ rows: [{ text: rawText, confidence: 0.99 }] });
+    assert.equal(result.expression, expression, rawText);
+    assert.equal(result.answer, answer, rawText);
+    assert.equal(result.rawText, rawText, rawText);
   }
 });
 
