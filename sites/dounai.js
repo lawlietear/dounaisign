@@ -1,6 +1,7 @@
 const { buildResult } = require('../lib/result');
 const { PANEL_URL, readDounaiAccount } = require('../lib/dounai-account');
 const captcha = require('./dounai-captcha');
+const { dismissDounaiNotice } = require('../lib/dounai-notice');
 
 async function readDounaiState(page, expectedAccount) {
   const accountCheck = await readDounaiAccount(page, expectedAccount);
@@ -35,6 +36,7 @@ async function observeState(page, timeoutMs, waitingStates, expectedAccount) {
   while (true) {
     try {
       state = await readDounaiState(page, expectedAccount);
+      if (['ready_to_sign', 'already_done'].includes(state)) await dismissDounaiNotice(page, { timeoutMs });
     } catch (error) {
       if (!/Execution context was destroyed|Cannot find context/i.test(error.message)) throw error;
       if (Date.now() >= deadline) return state || 'unexpected_response';
@@ -83,6 +85,7 @@ async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, inter
       { details: { httpStatus: response.status() } });
     const modal = page.locator('#checkin-captcha-modal');
     let state = await readDounaiState(page, expectedAccount);
+    if (['ready_to_sign', 'already_done'].includes(state)) await dismissDounaiNotice(page, { timeoutMs });
     if (interactive && ['auth_required', 'verification_required'].includes(state) &&
         !(autoCaptcha && state === 'verification_required' && await modal.isVisible())) {
       console.error('请在项目 Chrome 窗口中完成豆奶登录或安全验证，最多等待 5 分钟。程序不会读取密码或自动完成验证码。');
@@ -91,6 +94,7 @@ async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, inter
         // Login can land on a different user page before the panel greeting is ready.
         await page.goto(PANEL_URL, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
         state = await readDounaiState(page, expectedAccount);
+        if (['ready_to_sign', 'already_done'].includes(state)) await dismissDounaiNotice(page, { timeoutMs });
       }
     }
     if (autoCaptcha && captchaAttempts.count >= 5 && ['ready_to_sign', 'verification_required'].includes(state)) {

@@ -380,8 +380,23 @@ test('login startup uses configured account and package-local profile without cr
     headless: true,
   });
   const launch = {};
-  const calls = { goto: [], evaluates: 0 };
+  const calls = { goto: [], evaluates: 0, noticeWaits: 0 };
   const page = {
+    url() { return PANEL_URL; },
+    async title() { return '豆奶用户面板'; },
+    getByRole(role) {
+      assert.equal(role, 'button');
+      return {
+        async count() { return 0; },
+        async waitFor({ state }) {
+          calls.noticeWaits += 1;
+          assert.equal(state, 'visible');
+          const error = new Error('Synthetic notice did not appear.');
+          error.name = 'TimeoutError';
+          throw error;
+        },
+      };
+    },
     async goto(...args) { calls.goto.push(args); },
     async evaluate(_callback, parameters) {
       calls.evaluates += 1;
@@ -412,6 +427,7 @@ test('login startup uses configured account and package-local profile without cr
   assert.equal(launch.options.headless, false, 'login is interactive');
   assert.deepEqual(calls.goto, [[PANEL_URL, { waitUntil: 'domcontentloaded', timeout: 60000 }]]);
   assert.equal(calls.evaluates, 1);
+  assert.equal(calls.noticeWaits, 1);
   assert.equal(fs.existsSync(path.join(baseDir, 'profiles')), false, 'mock startup creates no browser profile');
   assert.equal(fs.existsSync(path.join(baseDir, 'data/login-status.json')), true);
   assert.equal(fs.existsSync(path.join(baseDir, 'data/dounai-signin-status.json')), false,

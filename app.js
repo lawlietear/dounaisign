@@ -8,6 +8,7 @@ const { buildResult } = require('./lib/result');
 const { appendLog } = require('./lib/logging');
 const { PANEL_URL, readDounaiAccount } = require('./lib/dounai-account');
 const { runDounaiSignin } = require('./sites/dounai');
+const { dismissDounaiNotice } = require('./lib/dounai-notice');
 const { evidencePaths, captureCaptchaEvidence, captureFailureEvidence } = require('./lib/dounai-diagnostics');
 const { runWithRetry } = require('./lib/dounai-retry');
 
@@ -38,7 +39,10 @@ async function waitForLogin(page, expectedAccount, timeoutMs = 300000) {
     catch (error) {
       if (!/Execution context was destroyed|Cannot find context/i.test(error.message)) throw error;
     }
-    if (check?.ok) return buildResult('dounai', true, 'logged_in', 'Account confirmed. No sign-in action was performed.');
+    if (check?.ok) {
+      await dismissDounaiNotice(page, { timeoutMs: Math.max(1, deadline - Date.now()) });
+      return buildResult('dounai', true, 'logged_in', 'Account confirmed. No sign-in action was performed.');
+    }
     if (check?.reason === 'unexpected_page' && check.loggedIn) {
       await page.goto(PANEL_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
     }

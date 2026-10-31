@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-26T01:58:12.753Z",
-  "version": "1.0.4",
+  "generatedAt": "2026-10-31T09:33:08.728Z",
+  "version": "1.0.5",
   "target": "Windows x64",
   "windowsLiveAcceptance": "not_run",
   "files": [
@@ -21,18 +21,18 @@
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "00a8c3e809257b1011c4904f848cbd2566179be9a01837ab78767d0800fd1d11",
-      "sizeBytes": 2526
+      "sha256": "48bbd1049f50432eb38c2b13237884750abcfb4617effe549da7fb26a1f585c8",
+      "sizeBytes": 2948
     },
     {
       "path": "GITHUB_UPDATES.md",
-      "sha256": "67c0e4d77b345da12ff5cdc7cd489659d98e2c4c753939121d4d3f5eee82eb41",
+      "sha256": "01720323efeaf45421f24e7e762e28ea0ff5a946e819169fd590e307b7738569",
       "sizeBytes": 4514
     },
     {
       "path": "README.md",
-      "sha256": "be3e93fe44e1b75c1e855b84ca8d5132103302d531121b1b08fa9b9d38896efa",
-      "sizeBytes": 14255
+      "sha256": "f553704251657a28d7fb47e8cf88b5d443d787555e259cc12a7e9dd0850f499b",
+      "sizeBytes": 14802
     },
     {
       "path": "THIRD_PARTY.md",
@@ -41,8 +41,8 @@
     },
     {
       "path": "VERIFICATION.md",
-      "sha256": "02b5212a90e8094ae55782c9eec4be22ce43cd0168cb60a20822471a98f6941d",
-      "sizeBytes": 8329
+      "sha256": "40c24903f5be64440722554fd28877a4ac1ccf16baa538a32da91a656803a5dc",
+      "sizeBytes": 9376
     },
     {
       "path": "WINDOWS_AGENT_PROMPT.txt",
@@ -51,8 +51,8 @@
     },
     {
       "path": "app.js",
-      "sha256": "b271cb10cda0edf69a25304cacc481758add4f8994771924fd1abed55c376d73",
-      "sizeBytes": 8723
+      "sha256": "fd400056e8e7801b60e86efb343794d2aa9e1ae525898030e6b71bf73b9c16b0",
+      "sizeBytes": 8891
     },
     {
       "path": "config.example.json",
@@ -83,6 +83,11 @@
       "path": "lib/dounai-diagnostics.js",
       "sha256": "f44e69ab56a032a1a81df6ede239ed6f68eb2374f052ed9f31741ca724600614",
       "sizeBytes": 2699
+    },
+    {
+      "path": "lib/dounai-notice.js",
+      "sha256": "6d03cdeed11f8fa03e6bad7ae44e2fc7771182a4534a8328b6c7902eece6d61b",
+      "sizeBytes": 1847
     },
     {
       "path": "lib/dounai-retry.js",
@@ -126,12 +131,12 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "fced096dd923aac608201d89a161a3b8b65d1e4504efcc8a9216c0afba2056c1",
+      "sha256": "934f25507f25ebbd96bf32c2b6f08afcd4015298f594c9b2c44093c9064aadfa",
       "sizeBytes": 753
     },
     {
       "path": "package.json",
-      "sha256": "fce612e5975a1e2960bdbe94d6ada47671553261992b1d41b23b88b7c8045fd1",
+      "sha256": "53de1ffb2190a6c183394f6bd02dcdd80d59ca79e05156c32113bc5ca614c9d6",
       "sizeBytes": 440
     },
     {
@@ -171,8 +176,8 @@
     },
     {
       "path": "sites/dounai.js",
-      "sha256": "f8d4151f4de9453f84895eb2dc047f57afc2067dada3ef01aba764c8fc164308",
-      "sizeBytes": 12666
+      "sha256": "ef1aa6720e806b854d4096632d6ea40adedccf5f56961772dbbfc3a19df39463",
+      "sizeBytes": 13058
     },
     {
       "path": "status.ps1",
@@ -188,6 +193,11 @@
       "path": "tests/fixtures/route-fixtures.js",
       "sha256": "6e4b5511dcb44e2d42f3fc288f614c191939ec2d13d270e45bfe1bbdb229ebe4",
       "sizeBytes": 4535
+    },
+    {
+      "path": "tests/notice.test.js",
+      "sha256": "5718bf48eee1fadaa681d36d6fa45dc7b81cf5b365f796750c106a7935df8a39",
+      "sizeBytes": 12289
     },
     {
       "path": "tests/recognition-reopen.test.js",
@@ -206,8 +216,8 @@
     },
     {
       "path": "tests/windows-package.test.js",
-      "sha256": "c5288f946a5d35252ebb142c4f4ce7541beaf9773b6d167f6afc50ac05557203",
-      "sizeBytes": 24822
+      "sha256": "fe9c482c4d4f41cff0751f03b339cd0175ff94b7e4805c470109bad68a8aa7c9",
+      "sizeBytes": 25342
     },
     {
       "path": "tools/ocr/assets.json",

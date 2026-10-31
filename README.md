@@ -1,4 +1,4 @@
-# 豆奶 Windows 独立签到代码包 1.0.4
+# 豆奶 Windows 独立签到代码包 1.0.5
 
 公开仓库：[lawlietear/dounaisign](https://github.com/lawlietear/dounaisign)。首次可克隆代码，后续按 [更新说明](GITHUB_UPDATES.md) 拉取变化。
 
@@ -60,6 +60,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\status.ps1
 代理留空表示不额外给Chrome指定代理，仍可能受系统代理或网络环境影响；需要显式代理时填自己的地址，例如 `http://127.0.0.1:7890`，不要沿用他人端口。浏览器路径可填写 `C:/Program Files/Google/Chrome/Application/chrome.exe`。初次创建也可传 `setup.ps1 -Account "用户名" -Proxy "地址" -ChromePath "路径"`；配置已存在时请直接编辑，初始化不会覆盖它。
 
 默认前台运行，更方便看到验证和错误。`headless=true` 是可选配置，未验收其在豆奶上的稳定性。普通日常Chrome的会话与本包profile不共享；复制代码到另一台电脑后需要那位使用者重新登录。
+
+## 登录后公告
+
+正确账户面板出现“消息提示”及“好的，我知道了”时，登录和签到入口正常点击一次确认，等待原公告容器隐藏后继续。公告可能延迟插入或从隐藏变为可见，因此最多等待3秒（不超过调用超时）；未出现就按原流程继续。标题/按钮不匹配或含可编辑字段的弹窗不自动确认，遮罩未消失则停止。不会点击公告教程/下载链接或修改Chrome通知权限，也不代替验证码、安全验证或签到成功判断。
 
 ## 日常执行与判定
 
