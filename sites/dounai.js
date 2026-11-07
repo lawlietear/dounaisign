@@ -116,12 +116,13 @@ async function runDounaiSignin(page, { expectedAccount, timeoutMs = 30000, inter
       captchaEvidence = undefined;
       let recognitionFailed = false;
       const history = { attempt: recognitionAttempt };
-      if (captureCaptcha) {
-        try { captchaEvidence = await captureCaptcha({ recognitionAttempt }); }
-        catch { captchaEvidence = { warning: '处理前验证码图片未保存。' }; }
-      }
       try {
-        const result = await captcha.recognizeFillAndSubmitDounaiCaptcha(page, { timeoutMs, expectedAccount });
+        const result = await captcha.recognizeFillAndSubmitDounaiCaptcha(page, { timeoutMs, expectedAccount,
+          captureImage: captureCaptcha ? async (png) => {
+            try { captchaEvidence = await captureCaptcha({ recognitionAttempt, png }); }
+            catch { captchaEvidence = { warning: '处理前验证码图片未保存。' }; }
+          } : undefined,
+        });
         captchaRecognition = { confidence: result.confidence, recognitionMode: result.recognitionMode };
         if (result.engine) captchaRecognition.engine = result.engine;
         if (result.rawText !== undefined) captchaRecognition.rawText = result.rawText;

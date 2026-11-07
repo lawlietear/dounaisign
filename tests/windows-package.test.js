@@ -14,6 +14,7 @@ const { main, readStatus, waitForLogin } = require('../app');
 const { loadConfig, findChrome } = require('../lib/config');
 const { PANEL_URL } = require('../lib/dounai-account');
 const captchaOcr = require('../lib/dounai-captcha-ocr');
+const { recognizeFillAndSubmitDounaiCaptcha } = require('../sites/dounai-captcha');
 const { runDounaiSignin } = require('../sites/dounai');
 const { verifyAssets } = require('../scripts/doctor');
 const { captureCaptchaEvidence, captureFailureEvidence } = require('../lib/dounai-diagnostics');
@@ -357,6 +358,94 @@ test('account change during OCR blocks filling and prevents submission', async (
     assert.equal(counts.inputValue, '');
   });
   assert.equal(calls(), 1);
+});
+
+test('waits for delayed CAPTCHA image content and editable input, then evidences the exact OCR bytes', async (t) => {
+  let recognizedPng;
+  const calls = mockOcr(t, async (png) => {
+    recognizedPng = Buffer.from(png);
+    return { expression: '12+7', answer: '19', confidence: 0.99 };
+  });
+  const baseDir = temporaryDirectory(t, 'dounai-captcha-ready-');
+  let evidenceResult;
+  let evidencedPng;
+
+  await withPanelFixture({}, async (page) => {
+    await page.goto(PANEL_URL, { waitUntil: 'domcontentloaded' });
+    await page.locator('#checkin-captcha-box svg').evaluate((svg) => svg.replaceChildren());
+    await page.locator('#checkin_captcha_code').evaluate((input) => { input.disabled = true; });
+    await page.evaluate(() => {
+      setTimeout(() => {
+        const svg = document.querySelector('#checkin-captcha-box svg');
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', '280'); text.setAttribute('y', '105'); text.textContent = '12 + 7 = ?';
+        svg.append(text);
+      }, 300);
+      setTimeout(() => { document.querySelector('#checkin_captcha_code').disabled = false; }, 650);
+    });
+
+    const startedAt = Date.now();
+    const result = await recognizeFillAndSubmitDounaiCaptcha(page, {
+      expectedAccount: TEST_ACCOUNT,
+      timeoutMs: 5000,
+      captureImage: async (png) => {
+        evidenceResult = await captureCaptchaEvidence(page, {
+          baseDir, attemptId: 'delayed-ready-fixture', timeoutMs: 1000, png,
+        });
+        evidencedPng = fs.readFileSync(path.join(baseDir, evidenceResult.image));
+      },
+    });
+
+    assert.ok(Date.now() - startedAt >= 2000, 'must respect the new minimum ready window');
+    assert.equal(result.status, 'submitted');
+    assert.ok(evidenceResult);
+    assert.deepEqual(evidencedPng, recognizedPng, 'saved evidence is the exact buffer passed to OCR');
+    assert.equal(evidencedPng.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+    const counts = await evidence(page);
+    assert.equal(counts.inputValue, '19');
+    assert.equal(counts.captchaSubmits, 1);
+  });
+
+  assert.equal(calls(), 1);
+});
+
+test('a CAPTCHA image changing during OCR prevents filling and submission', async (t) => {
+  let pageRef;
+  const calls = mockOcr(t, async () => {
+    await pageRef.locator('#checkin-captcha-box svg text').evaluate((text) => { text.textContent = '12 + 8 = ?'; });
+    return { expression: '12+7', answer: '19', confidence: 0.99 };
+  });
+
+  await withPanelFixture({}, async (page) => {
+    pageRef = page;
+    await page.goto(PANEL_URL, { waitUntil: 'domcontentloaded' });
+    await assert.rejects(
+      recognizeFillAndSubmitDounaiCaptcha(page, { expectedAccount: TEST_ACCOUNT, timeoutMs: 5000 }),
+      { code: 'captcha_changed' },
+    );
+    const counts = await evidence(page);
+    assert.equal(counts.inputValue, '');
+    assert.equal(counts.captchaButtonClicks, 0);
+    assert.equal(counts.captchaSubmits, 0);
+  });
+
+  assert.equal(calls(), 1);
+});
+
+test('a mismatched configured expectedAccount blocks CAPTCHA OCR and submission', async (t) => {
+  const calls = mockOcr(t);
+  await withPanelFixture({ accountText: 'Hi! page-account' }, async (page) => {
+    const result = await runDounaiSignin(page, {
+      expectedAccount: 'configured-windows-account', autoCaptcha: true, timeoutMs: 1500,
+    });
+    const counts = await evidence(page);
+    assert.equal(result.status, 'account_mismatch');
+    assert.equal(result.details.accountCheck.reason, 'account_mismatch');
+    assert.equal(calls(), 0);
+    assert.equal(counts.inputValue, '');
+    assert.equal(counts.captchaButtonClicks, 0);
+    assert.equal(counts.captchaSubmits, 0);
+  });
 });
 
 test('login waits for the configured account and performs zero sign-in actions', async (t) => {

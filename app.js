@@ -76,8 +76,8 @@ async function runBrowserAttempt({ command, baseDir, chromium, interactive, auto
           } else {
             outcome = await runDounaiSignin(page, {
               expectedAccount: config.expectedAccount, timeoutMs: config.timeoutMs, autoCaptcha, interactive, captchaAttempts,
-              captureCaptcha: ({ recognitionAttempt = 1 } = {}) => captureCaptchaEvidence(page, {
-                baseDir, attemptId, timeoutMs: config.timeoutMs, recognitionAttempt,
+              captureCaptcha: ({ recognitionAttempt = 1, png } = {}) => captureCaptchaEvidence(page, {
+                baseDir, attemptId, timeoutMs: config.timeoutMs, recognitionAttempt, png,
               }),
             });
           }

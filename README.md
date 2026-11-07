@@ -1,5 +1,7 @@
 # 豆奶 Windows 独立签到代码包 1.0.5
 
+1.0.6：验证图片先等待内容与输入框就绪，至少观察2秒且图片稳定250ms；5秒未就绪停止。保存与处理使用同一份图片字节，变化时不继续。依赖和模型未更换，仅版本元数据变化无需重新setup；Windows实机验收仍单独完成。
+
 公开仓库：[lawlietear/dounaisign](https://github.com/lawlietear/dounaisign)。首次可克隆代码，后续按 [更新说明](GITHUB_UPDATES.md) 拉取变化。
 
 面向 **Windows 10/11 x64**，由 Agent 或使用者通过 PowerShell 执行。无需桌面界面或 Codex 专用工具，不连接原项目、不创建定时任务。包含豆奶签到、本地 RapidOCR 算式验证码识别、填写、每轮最多一次提交及网页结果核验；可选择明确拒绝后等待3分钟补试一次。

@@ -13,8 +13,53 @@ async function assertDounaiAccount(page, captchaStage, expectedAccount) {
   }
 }
 
+async function waitForCaptchaReady(page, image, input) {
+  const startedAt = Date.now();
+  const deadline = startedAt + 5000;
+  let previousImage;
+  let stableSince = startedAt;
+  while (true) {
+    const currentImage = await image.evaluateAll((elements) => {
+      if (elements.length !== 1) return null;
+      const element = elements[0];
+      const rect = element.getBoundingClientRect();
+      if (!rect.width || !rect.height || getComputedStyle(element).visibility === 'hidden') return null;
+      if (element.tagName.toLowerCase() === 'img') {
+        if (!element.complete || !element.naturalWidth || !element.naturalHeight) return null;
+      } else {
+        // A visible SVG shell can precede the actual question.
+        const text = [...element.querySelectorAll('text')].some((node) => node.textContent.trim());
+        const drawing = element.querySelector('path[d], use[href], image[href], polygon[points], polyline[points]');
+        if (!text && !drawing) return null;
+      }
+      return element.outerHTML;
+    });
+    const now = Date.now();
+    if (currentImage !== previousImage) {
+      previousImage = currentImage;
+      stableSince = now;
+    }
+    const inputCount = await input.count();
+    const inputVisible = inputCount === 1 && await input.isVisible();
+    const inputEditable = inputVisible && await input.isEditable();
+    if (currentImage && inputEditable && now - startedAt >= 2000 && now - stableSince >= 250) return;
+    if (now >= deadline) {
+      const error = inputEditable
+        ? ocr.captchaError('captcha_image_not_ready', '等待5秒后验证码图片仍未加载完成或稳定，未识别或提交。')
+        : ocr.captchaError('captcha_input_not_ready', '等待5秒后验证码输入框仍未就绪，未识别或提交。');
+      error.captchaStage = inputEditable ? 'before_image' : 'before_input';
+      if (!inputEditable) error.inputCheck = {
+        count: inputCount, visible: inputVisible, editable: inputEditable,
+        reason: inputCount !== 1 ? 'not_unique' : !inputVisible ? 'not_visible' : 'not_editable',
+      };
+      throw error;
+    }
+    await page.waitForTimeout(Math.min(100, deadline - now));
+  }
+}
+
 // The caller supplies an existing page. Neither mode opens a browser or refreshes a challenge.
-async function processDounaiCaptcha(page, { expectedAccount, submit = false, timeoutMs = 5000 } = {}) {
+async function processDounaiCaptcha(page, { expectedAccount, submit = false, timeoutMs = 5000, captureImage } = {}) {
   await assertDounaiAccount(page, 'before_ocr', expectedAccount);
   const modal = page.locator('#checkin-captcha-modal');
   if (await modal.count() !== 1 || !await modal.isVisible()) {
@@ -22,13 +67,17 @@ async function processDounaiCaptcha(page, { expectedAccount, submit = false, tim
   }
   const image = modal.locator('#checkin-captcha-box svg, #checkin-captcha-box img');
   const input = modal.locator('#checkin_captcha_code');
-  if (await image.count() !== 1 || !await image.isVisible() || await input.count() !== 1 ||
-      !await input.isVisible() || !await input.isEditable()) {
-    throw ocr.captchaError('unsupported_captcha', '未找到唯一可见图片和可填写的验证码输入框。');
-  }
-  if (await input.inputValue()) throw ocr.captchaError('already_filled', '输入框已有内容，保留原输入。');
+  if (await input.count() === 1 && await input.inputValue()) throw ocr.captchaError('already_filled', '输入框已有内容，保留原输入。');
+  await waitForCaptchaReady(page, image, input);
+  await assertDounaiAccount(page, 'before_ocr', expectedAccount);
+  if (!await modal.isVisible()) throw ocr.captchaError('captcha_not_visible', '签到验证码弹窗已关闭。');
+  if (await input.inputValue()) throw ocr.captchaError('already_filled', '等待图片期间输入框已填写，保留原输入。');
   const originalImage = await image.evaluate((element) => element.outerHTML);
   const png = await image.screenshot({ type: 'png', timeout: 5000 });
+  if (originalImage !== await image.evaluate((element) => element.outerHTML)) {
+    throw ocr.captchaError('captcha_changed', '截图期间验证码已变化，未继续识别。');
+  }
+  if (captureImage) await captureImage(png);
   let result;
   try { result = await ocr.recognizeCaptchaImage(png); }
   catch (error) {
@@ -81,11 +130,9 @@ async function recognizeAndFillDounaiCaptcha(page, { expectedAccount } = {}) {
   return processDounaiCaptcha(page, { expectedAccount });
 }
 
-async function recognizeFillAndSubmitDounaiCaptcha(page, { expectedAccount, timeoutMs = 30000 } = {}) {
+async function recognizeFillAndSubmitDounaiCaptcha(page, { expectedAccount, timeoutMs = 30000, captureImage } = {}) {
   await assertDounaiAccount(page, 'before_image', expectedAccount);
-  await page.locator('#checkin-captcha-modal #checkin-captcha-box')
-    .locator('svg, img').waitFor({ state: 'visible', timeout: timeoutMs });
-  return processDounaiCaptcha(page, { expectedAccount, submit: true, timeoutMs });
+  return processDounaiCaptcha(page, { expectedAccount, submit: true, timeoutMs, captureImage });
 }
 
 module.exports = { recognizeAndFillDounaiCaptcha, recognizeFillAndSubmitDounaiCaptcha };

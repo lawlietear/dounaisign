@@ -1,5 +1,13 @@
 # 验证记录
 
+## 1.0.6 · 2026-11-07
+
+使用现有 mise Node 24.21.0、Mac 模块 Playwright 1.62.1 和系统 Chrome，对干净 1.0.6 发布副本运行完整测试：54 项通过、0 项失败（原 51 项及新增 3 项）。命令为 `mise exec -- node --test --test-concurrency=1 tests/*.test.js`，通过 `NODE_PATH` 复用 Mac 模块依赖，并在测试子进程加载 `commands/release-test-chrome.js`，使用 `DOUNAI_TEST_CHROME_PATH` 指向本机系统 Chrome；未安装依赖。启动前在获准环境确认 GUI 域及 WindowServer。
+
+新增本地 route fixture 验证：验证码 SVG 内容与输入框延迟就绪时等待稳定；留存截图字节与交给 OCR mock 的同一 Buffer 完全一致；识别期间图像变化时不填入或提交；expectedAccount 不匹配时不调用 OCR、不提交。所有非 fixture 页面请求由 route 中止。验证码结果由 mock 提供，没有调用真实 OCR、访问真实网站、登录或签到。其他 OCR 路径仍由原模拟测试覆盖。
+
+以上是 macOS 本地模拟测试，不代表 Windows x64、PowerShell、Windows 原生 OCR 或真实站点验收；这些仍由接收方后续验证。
+
 ## 1.0.5 · 2026-10-31
 
 同步普通公告关闭与首次加载等待：精确匹配确认按钮，最多等待3秒，等待原容器隐藏再继续。Windows账户仍由expectedAccount配置，login只确认登录、不执行签到。
